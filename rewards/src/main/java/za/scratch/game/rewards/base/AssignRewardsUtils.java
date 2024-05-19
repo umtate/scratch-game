@@ -130,9 +130,8 @@ class AssignRewardsUtils {
 
         rewardsRequest.matrix().value().stream()
                 .filter(list -> list.stream().distinct().limit(2).count() <= 1)
-                .forEach(list -> {
-                    addWinningFromAxis(list, appliedWinningCombinations, HORIZONTAL_WINNING_COMBINATION, rewardsRequest, symbolValues);
-                });
+                .forEach(list -> addWinningFromAxis(list,
+                        appliedWinningCombinations, HORIZONTAL_WINNING_COMBINATION, rewardsRequest, symbolValues));
     }
 
     public static void addVerticalWinnings(RewardsRequest rewardsRequest,
