@@ -8,5 +8,5 @@ import java.util.Map;
 @Builder
 public record Winnings(Map<String, List<String>> appliedWinningCombinations,
                        Map<String, Double> winningValue,
-                       Map<String, Double> symbolWinnings) {
+                       Map<String, List<Double>> symbolWinnings) {
 }

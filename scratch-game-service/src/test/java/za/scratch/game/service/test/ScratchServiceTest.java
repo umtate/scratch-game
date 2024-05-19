@@ -62,6 +62,17 @@ public class ScratchServiceTest {
     }
 
     @Test
+    @SuppressWarnings("ConstantConditions")
+    void whenStart_andBetAmountIsNull_throwException(){
+        Double betAmount = null;
+
+        var error = assertThrows(NullPointerException.class, () ->
+                scratchGameService.start(FILE_PATH, betAmount));
+
+        assertEquals("GameService: Bet amount cannot be null", error.getMessage());
+    }
+
+    @Test
     void whenStart_andUrlIsNotNull_getConfigFromSpi() throws Exception {
         mockConfigInputSpi();
         matrixAndRewardsMock();
