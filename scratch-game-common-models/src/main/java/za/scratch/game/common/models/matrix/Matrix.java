@@ -5,4 +5,4 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public record Matrix(List<List<String>> matrix) { }
+public record Matrix(List<List<String>> value) { }

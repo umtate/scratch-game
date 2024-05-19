@@ -45,14 +45,16 @@ public class ScratchGameService {
 
     public Output start(String filePath, Double betAmount) throws Exception {
        requireNonNull(filePath, "GameService: File path cannot be null");
+       requireNonNull(betAmount, "GameService: Bet amount cannot be null");
+
        var config = configurationInputSpi.convertInputToConfiguration(filePath);
 
-       var matrix = getMatrix(config);
+       var  matrix = getMatrix(config);
 
        var rewards = getRewards(matrix, config, betAmount);
 
        return Output.builder()
-               .matrix(matrix)
+               .matrix(matrix.value())
                .reward(rewards.rewards())
                .applied_bonus_symbol(rewards.appliedBonusSymbol())
                .applied_winning_combinations(rewards.appliedWinningCombinations())

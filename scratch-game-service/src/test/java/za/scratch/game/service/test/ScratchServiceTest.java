@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ScratchServiceTest {
-    private static final String FILE_PATH = "user/somefile.txt";
+    private static final String FILE_PATH = "location/config.json";
     private static final Double BET_AMOUNT = 100.0;
 
     @Mock
@@ -43,6 +43,13 @@ public class ScratchServiceTest {
                 .thenReturn(configInput);
     }
 
+    private void matrixAndRewardsMock() {
+        when(generateMatrixSpi.generateMatrix(any(MatrixRequest.class)))
+                .thenReturn(mock(Matrix.class));
+        when(rewardsSpi.assign(any(RewardsRequest.class)))
+                .thenReturn(mock(Rewards.class));
+    }
+
     @Test
     @SuppressWarnings("ConstantConditions")
     void whenStart_andUrlIsNull_throwException(){
@@ -57,8 +64,7 @@ public class ScratchServiceTest {
     @Test
     void whenStart_andUrlIsNotNull_getConfigFromSpi() throws Exception {
         mockConfigInputSpi();
-        when(rewardsSpi.assign(any(RewardsRequest.class)))
-                .thenReturn(mock(Rewards.class));
+        matrixAndRewardsMock();
 
         scratchGameService.start(FILE_PATH, BET_AMOUNT);
 
@@ -66,19 +72,15 @@ public class ScratchServiceTest {
                 .convertInputToConfiguration(anyString());
     }
 
+
     @Test
     void whenStart_andConfigInputAvailable_getMatrixFromSpi() throws Exception {
         mockConfigInputSpi();
-
-        when(generateMatrixSpi.generateMatrix(any(MatrixRequest.class)))
-                .thenReturn(mock(Matrix.class));
-        when(rewardsSpi.assign(any(RewardsRequest.class)))
-                .thenReturn(mock(Rewards.class));
+        matrixAndRewardsMock();
 
         scratchGameService.start(FILE_PATH, BET_AMOUNT);
 
         InOrder inOrder = inOrder(configurationInputSpi, generateMatrixSpi);
-
         inOrder.verify(configurationInputSpi)
                 .convertInputToConfiguration(anyString());
         inOrder.verify(generateMatrixSpi)
@@ -88,16 +90,11 @@ public class ScratchServiceTest {
     @Test
     void whenStart_andMatrixIsGenerated_getRewardsFromSpi() throws Exception {
         mockConfigInputSpi();
-
-        when(generateMatrixSpi.generateMatrix(any(MatrixRequest.class)))
-                .thenReturn(mock(Matrix.class));
-        when(rewardsSpi.assign(any(RewardsRequest.class)))
-                .thenReturn(mock(Rewards.class));
+        matrixAndRewardsMock();
 
         scratchGameService.start(FILE_PATH, BET_AMOUNT);
 
         InOrder inOrder = inOrder(configurationInputSpi, generateMatrixSpi, rewardsSpi);
-
         inOrder.verify(configurationInputSpi)
                 .convertInputToConfiguration(anyString());
         inOrder.verify(generateMatrixSpi)
@@ -109,12 +106,7 @@ public class ScratchServiceTest {
     @Test
     void whenStart_andMatrixIsGenerated_getOutput() throws Exception {
         mockConfigInputSpi();
-
-        when(generateMatrixSpi.generateMatrix(any(MatrixRequest.class)))
-                .thenReturn(mock(Matrix.class));
-
-        when(rewardsSpi.assign(any(RewardsRequest.class)))
-                .thenReturn(mock(Rewards.class));
+        matrixAndRewardsMock();
 
         var output = scratchGameService.start(FILE_PATH, BET_AMOUNT);
 
