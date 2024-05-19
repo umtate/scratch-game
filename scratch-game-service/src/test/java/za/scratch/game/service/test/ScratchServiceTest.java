@@ -45,14 +45,13 @@ public class ScratchServiceTest {
 
     @Test
     @SuppressWarnings("ConstantConditions")
-    void whenStart_andUrlIsNull_throwException() throws Exception {
+    void whenStart_andUrlIsNull_throwException(){
       String filePath = null;
 
       var error = assertThrows(NullPointerException.class, () ->
               scratchGameService.start(filePath, BET_AMOUNT));
 
       assertEquals("GameService: File path cannot be null", error.getMessage());
-
     }
 
     @Test

@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class ConfigureFileInputServiceTest {
 
-    private final String filePath = "src/test/resources/config.json";
+    private static final String FILE_PATH = "src/test/resources/config.json";
 
     private final ConfigureFileInputService configureFileInputService  = new ConfigureFileInputService();
 
@@ -39,7 +39,7 @@ public class ConfigureFileInputServiceTest {
     @Test
     void whenValidFilePath_thenConvertInput() throws Exception {
 
-        var configurationInput = configureFileInputService.convertInputToConfiguration(filePath);
+        var configurationInput = configureFileInputService.convertInputToConfiguration(FILE_PATH);
 
         assertNotNull(configurationInput);
         assertInstanceOf(ConfigurationInput.class, configurationInput);
