@@ -1,77 +1,18 @@
 package za.scratch.game.rewards.base;
 
-import za.scratch.game.common.models.config.Symbols;
 import za.scratch.game.common.models.rewards.RewardsRequest;
 import za.scratch.game.rewards.models.RewardsHolder;
 import za.scratch.game.rewards.models.Winnings;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static za.scratch.game.rewards.base.AssignRewardsUtils.*;
 
 public class AssignRewardBaseClass {
 
-    private static final String BONUS_TYPE = "bonus";
-
-    private Map<String, Integer> countSymbols(List<List<String>> listOfLists) {
-        Map<String, Integer> stringCounts = new HashMap<>();
-        for (List<String> innerList : listOfLists) {
-            for (String str : innerList) {
-                stringCounts.put(str, stringCounts.getOrDefault(str, 0) + 1);
-            }
-        }
-        return stringCounts;
-    }
-
-    private String filterForBonusSymbol(Map<String, Symbols> map, List<String> matrixSymbols) {
-        List<String> filteredKeys = new ArrayList<>();
-
-        for (Map.Entry<String, Symbols> entry : map.entrySet()) {
-            if (entry.getValue().getType().equals(BONUS_TYPE)) {
-                filteredKeys.add(entry.getKey());
-            }
-        }
-
-        var filteredKeysStream = filteredKeys.stream()
-                .filter(key -> matrixSymbols.stream().anyMatch(symbol -> symbol.equals(key)))
-                .toList();
-
-        return filteredKeysStream.isEmpty() ? "" : filteredKeysStream.get(0);
-    }
-
-
-    private double calculateRewards(RewardsHolder rewardsHolder){
-        var listOfSymbolWinnings = new ArrayList<Double>();
-
-        for (Map.Entry<String, List<String>> combination : rewardsHolder.winnings().appliedWinningCombinations().entrySet()) {
-            if(rewardsHolder.winnings().winningValue().containsKey(combination.getKey())){
-                var applied = rewardsHolder.winnings().winningValue().get(combination.getKey())*rewardsHolder.betAmount();
-                var symbolRewards =  rewardsHolder.winnings().symbolWinnings().get(combination.getValue().get(0))*applied;
-                listOfSymbolWinnings.add(symbolRewards);
-            }
-        }
-
-        return listOfSymbolWinnings
-                .stream()
-                .mapToDouble(Double::doubleValue)
-                .sum();
-    }
-
-    private double factorBonus(String appliedBonusSymbol, double rewards) {
-        Pattern numberPattern = Pattern.compile("-?\\d+");
-
-        Pattern operatorPattern = Pattern.compile("[^\\d]+");
-
-        Matcher number = numberPattern.matcher(appliedBonusSymbol);
-        Matcher operator = operatorPattern.matcher(appliedBonusSymbol);
-
-        if(operator.find() && number.find()){
-            rewards = operator.group().equals("*") ?
-                    rewards * Double.parseDouble(number.group()):
-                    rewards + Double.parseDouble(number.group());
-        }
-        return rewards;
-    }
+    private static final String APPLIED_BONUS_MISS = "MISS";
 
     protected String getBonusSymbol(RewardsRequest rewardsRequest) {
         var flatMatrixList = rewardsRequest.matrix().value()
@@ -81,30 +22,15 @@ public class AssignRewardBaseClass {
         return filterForBonusSymbol(rewardsRequest.symbols(), flatMatrixList);
     }
 
+
     protected Winnings getWinnings(RewardsRequest rewardsRequest) {
         Map<String, List<String>> appliedWinningCombinations = new HashMap<>();
         Map<String, Double> winningValue = new HashMap<>();
-        Map<String, Double> symbolValues = new HashMap<>();
+        Map<String, List<Double>> symbolValues = new HashMap<>();
 
-        countSymbols(rewardsRequest.matrix().value()).forEach((symbol, count) -> {
-            var listForRewards = new ArrayList<String>();
-
-            rewardsRequest.winCombinations().forEach((s, wc) -> {
-                if(Objects.equals(wc.getCount(), count)){
-                    for (Map.Entry<String, Symbols> entry : rewardsRequest.symbols().entrySet()) {
-                        if (entry.getKey().equals(symbol)) {
-                            winningValue.put(symbol, entry.getValue().getReward_multiplier());
-                        }
-                    }
-                    symbolValues.put(s, wc.getReward_multiplier());
-                    listForRewards.add(s);
-                }
-            });
-
-            if(!listForRewards.isEmpty()){
-                appliedWinningCombinations.put(symbol, listForRewards);
-            }
-        });
+        addNormalWinnings(rewardsRequest, winningValue, symbolValues, appliedWinningCombinations);
+        addHorizontalWinnings(rewardsRequest, symbolValues, appliedWinningCombinations);
+        addVerticalWinnings(rewardsRequest,symbolValues,appliedWinningCombinations);
 
         return Winnings.builder()
                 .winningValue(winningValue)
@@ -123,9 +49,9 @@ public class AssignRewardBaseClass {
 
 
         var rewards = calculateRewards(rewardsHolder);
+        rewards = appliedBonusSymbol.equals(APPLIED_BONUS_MISS) ? rewards :
+                factorBonus(appliedBonusSymbol, rewards, rewardsRequest.symbols());
 
-        rewards = factorBonus(appliedBonusSymbol, rewards);
         return rewards;
     }
-
 }

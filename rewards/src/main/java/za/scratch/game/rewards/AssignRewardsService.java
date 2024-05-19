@@ -15,10 +15,10 @@ public class AssignRewardsService extends AssignRewardBaseClass implements Assig
         requireNonNull(rewardsRequest, "AssignRewardsService: rewardsRequest cannot be null");
 
         var winnings = getWinnings(rewardsRequest);
+        var isWinningsEmpty = winnings.appliedWinningCombinations().isEmpty();
 
-        var appliedBonusSymbol = getBonusSymbol(rewardsRequest);
-
-        var rewards = getRewards(rewardsRequest, winnings, appliedBonusSymbol);
+        var appliedBonusSymbol = isWinningsEmpty ? null : getBonusSymbol(rewardsRequest);
+        var rewards = isWinningsEmpty ? 0 : getRewards(rewardsRequest, winnings, appliedBonusSymbol);
 
         return Rewards.builder()
                 .appliedWinningCombinations(winnings.appliedWinningCombinations())
