@@ -32,10 +32,11 @@ public class AssignRewardBaseClass {
             }
         }
 
-        return filteredKeys.stream()
+        var filteredKeysStream = filteredKeys.stream()
                 .filter(key -> matrixSymbols.stream().anyMatch(symbol -> symbol.equals(key)))
-                .toList()
-                .get(0);
+                .toList();
+
+        return filteredKeysStream.isEmpty() ? "" : filteredKeysStream.get(0);
     }
 
 
